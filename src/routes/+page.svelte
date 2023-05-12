@@ -2,22 +2,31 @@
 	import { cacheExchange, createClient, fetchExchange, gql, queryStore } from '@urql/svelte';
 	import Loader from 'components/Loader.svelte';
 	import User from 'components/User.svelte';
-	import type { UserType } from 'lib/types';
+	import type { UsersConnectionType } from 'lib/types';
 
 	const client = createClient({
 		url: '/graphql',
 		exchanges: [cacheExchange, fetchExchange]
 	});
 
-	const result = queryStore<{ users: UserType[] }>({
+	// TODO: Go back to schema and mark types as non-nullable if applicable
+	const result = queryStore<{ usersConnection: UsersConnectionType }>({
 		client,
 		query: gql`
 			query {
-				users {
-					id
-					name
-					avatar
-					email
+				usersConnection(first: 10) {
+					users {
+						id
+						name
+						avatar
+						email
+					}
+					pageInfo {
+						hasPreviousPage
+						hasNextPage
+						startCursor
+						endCursor
+					}
 				}
 			}
 		`
@@ -29,7 +38,7 @@
 		{#if $result.fetching}
 			<Loader />
 		{:else if $result.data}
-			{#each $result.data.users as user (user.id)}
+			{#each $result.data.usersConnection.users as user (user.id)}
 				<User {user} />
 			{/each}
 		{/if}
