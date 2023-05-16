@@ -7,10 +7,9 @@
 
     export let client: Client;
     export let variables: PageVariables;
-    export let onLoadMore: Function; // TODO: figure out type of event handlers
+    export let onLoadMore: (after: string) => void;
     export let isLastPage: boolean;
 
-	// TODO: Go back to schema and mark types as non-nullable if applicable
 	$: result = queryStore<{ usersConnection: UsersConnectionType }>({
 		client,
 		query: gql`
@@ -23,7 +22,6 @@
 						email
 					}
 					pageInfo {
-						hasPreviousPage
 						hasNextPage
 						startCursor
 						endCursor
@@ -37,7 +35,6 @@
 	let bottomOfTheList: Element;
 
 	function handleIntersection(entries: IntersectionObserverEntry[]) {
-		console.log(`handleIntersection for SearchPageResult("${variables.after}")`)
 		entries.forEach(entry => {
 			if (entry.isIntersecting && isLastPage && $result.data && $result.data.usersConnection.pageInfo.hasNextPage) {
 				onLoadMore($result.data?.usersConnection.pageInfo.endCursor);
@@ -48,7 +45,6 @@
 	let observer: IntersectionObserver;
 
 	onMount(() => {
-		console.log(`Mounting observer for SearchPageResult("${variables.after}")`)
 		observer = new IntersectionObserver(
 				handleIntersection,
 				{ threshold: 1.0 }

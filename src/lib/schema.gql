@@ -6,17 +6,16 @@ type User {
 }
 
 type UsersConnection {
-	users: [User]
-	pageInfo: PageInfo
+	users: [User!]!
+	pageInfo: PageInfo!
 }
 
 type PageInfo {
-	hasPreviousPage: Boolean
-	hasNextPage: Boolean
+	hasNextPage: Boolean!
 	startCursor: ID
 	endCursor: ID
 }
 
 type Query {
-	usersConnection(first: Int, after: ID): UsersConnection
+	usersConnection(first: Int!, after: ID): UsersConnection!
 }
