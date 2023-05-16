@@ -3,6 +3,7 @@
 	import type { PageVariables, UsersConnectionType } from "lib/types";
 	import Loader from "./Loader.svelte";
 	import User from "./User.svelte";
+	import { onMount } from "svelte";
 
     export let client: Client;
     export let variables: PageVariables;
@@ -32,6 +33,28 @@
 		`,
 		variables,
 	});
+
+	let bottomOfTheList: Element;
+
+	function handleIntersection(entries: IntersectionObserverEntry[]) {
+		console.log(`handleIntersection for SearchPageResult("${variables.after}")`)
+		entries.forEach(entry => {
+			if (entry.isIntersecting && isLastPage && $result.data && $result.data.usersConnection.pageInfo.hasNextPage) {
+				onLoadMore($result.data?.usersConnection.pageInfo.endCursor);
+			}
+		});
+	}
+
+	let observer: IntersectionObserver;
+
+	onMount(() => {
+		console.log(`Mounting observer for SearchPageResult("${variables.after}")`)
+		observer = new IntersectionObserver(
+				handleIntersection,
+				{ threshold: 1.0 }
+		);
+		observer.observe(bottomOfTheList);
+	});
 </script>
 
 {#if $result.fetching}
@@ -40,8 +63,12 @@
     {#each $result.data.usersConnection.users as user (user.id)}
         <User {user} />
     {/each}
+{/if}
 
-    {#if isLastPage && $result.data.usersConnection.pageInfo.hasNextPage}
-        <button on:click={() => onLoadMore($result.data?.usersConnection.pageInfo.endCursor)}>Load More</button>
-    {/if}
+<!--
+	The !$result.data condition is used to include this div in the first render,
+	so that set as a target for the IntersectionObserver API in onMount().
+.-->
+{#if isLastPage && (!$result.data || $result.data.usersConnection.pageInfo.hasNextPage)}
+	<div bind:this={bottomOfTheList}></div>
 {/if}
