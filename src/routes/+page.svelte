@@ -2,8 +2,8 @@
 	import { cacheExchange, createClient, fetchExchange, gql, queryStore } from '@urql/svelte';
 	import Loader from 'components/Loader.svelte';
 	import SearchResultPage from 'components/SearchResultPage.svelte';
-	import User from 'components/User.svelte';
 	import type { PageVariables, UserType, UsersConnectionType } from 'lib/types';
+	import { onMount } from 'svelte';
 
 	const client = createClient({
 		url: '/graphql',
@@ -11,56 +11,55 @@
 	});
 
 	const first = 10;
+	let after: number | null = null;
+	let hasNextPage: boolean = true;
 
 	let pageVariables: PageVariables[] = [
-		{
-			first,
-			after: null
-		}
+
 	];
 
-	function onLoadMore(after: number) {
+	function onLoadMore(after: number | null) {
 		pageVariables = [...pageVariables, { first, after }]
 	}
 
-	// let after: number | null = null;
-	// let users: UserType[] = [];
+	let bottomOfTheList: Element;
 
-	// // TODO: Go back to schema and mark types as non-nullable if applicable
-	// $: result = queryStore<{ usersConnection: UsersConnectionType }>({
-	// 	client,
-	// 	query: gql`
-	// 		query($first: Int!, $after: ID) {
-	// 			usersConnection(first: $first, after: $after) {
-	// 				users {
-	// 					id
-	// 					name
-	// 					avatar
-	// 					email
-	// 				}
-	// 				pageInfo {
-	// 					hasPreviousPage
-	// 					hasNextPage
-	// 					startCursor
-	// 					endCursor
-	// 				}
-	// 			}
-	// 		}
-	// 	`,
-	// 	variables: { first, after }
-	// });
+	function handleIntersection(entries: IntersectionObserverEntry[]) {
+		entries.forEach(entry => {
+			if (entry.isIntersecting && hasNextPage) {
+				onLoadMore(after);
+			}
+		});
+	}
+
+	onMount(() => {
+		const observer = new IntersectionObserver(
+			handleIntersection,
+			{ threshold: 1.0 }
+		);
+		observer.observe(bottomOfTheList);
+	})
 </script>
 
 <!-- TODO: Figure out if the divs should be here or in child -->
 <div class="w-full h-full overflow-scroll">
 	<div class="flex flex-col gap-4 items-center p-4">
-		{#each pageVariables as pageVariable, index}
-			<SearchResultPage
-				{client}
-				variables = {pageVariable}
-				isLastPage = {index === pageVariables.length - 1}
-				onLoadMore = {onLoadMore}
-			/>
-		{/each}
+		{#if pageVariables.length == 0}
+			<Loader />
+		{:else}
+			{#each pageVariables as pageVariable, index}
+				<SearchResultPage
+					{client}
+					variables = {pageVariable}
+					isLastPage = {index === pageVariables.length - 1}
+					onLoadMore = {onLoadMore}
+					bind:endCursor = {after}
+					bind:hasNextPage = {hasNextPage}
+				/>
+			{/each}
+		{/if}
 	</div>
+
+
+	<div bind:this={bottomOfTheList}></div>
 </div>
