@@ -15,6 +15,7 @@ const yogaApp = createYoga<RequestEvent>({
 				usersConnection: (source, args, context, info) => {
 					const allUsers = users;
 					const { first, after } = args;
+
 					// Set indexStart to 0 if after does not exist or no user has id after
 					// Note that if findIndex does not find a user, then -1 is returned,
 					// so indexStart will be set to -1 + 1 = 0, which is what we want.
@@ -24,17 +25,14 @@ const yogaApp = createYoga<RequestEvent>({
 					const indexEnd = indexStart + first;
 					const usersToReturn = users.slice(indexStart, indexEnd);
 
-
-					const usersConnection = {
+					return {
 						users: usersToReturn,
 						pageInfo: {
 							hasNextPage: indexEnd < allUsers.length,
-							startCursor: usersToReturn[0].id,
-							endCursor: usersToReturn[usersToReturn.length - 1].id
+							startCursor: usersToReturn.length > 0 ? usersToReturn[0].id : null,
+							endCursor: usersToReturn.length > 0 ? usersToReturn[usersToReturn.length - 1].id : null
 						}
 					}
-
-					return usersConnection;
 				}
 			}
 		}

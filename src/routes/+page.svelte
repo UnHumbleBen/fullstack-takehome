@@ -10,16 +10,10 @@
 
 	const first = 10;
 
-	// TODO: Format document and reorder document structure based on best practices
-
-	let pageVariables: PageVariables[] = [
-		{
-			first,
-		}
-	];
+	let pageVariables: PageVariables[] = [{ first }];
 
 	function onLoadMore(after: string) {
-		pageVariables = [...pageVariables, { first, after }]
+		pageVariables = [...pageVariables, { first, after }];
 	}
 </script>
 
@@ -28,9 +22,9 @@
 		{#each pageVariables as pageVariable, index}
 			<SearchResultPage
 				{client}
-				variables = {pageVariable}
-				isLastPage = {index === pageVariables.length - 1}
-				onLoadMore = {onLoadMore}
+				variables={pageVariable}
+				isLastPage={index === pageVariables.length - 1}
+				{onLoadMore}
 			/>
 		{/each}
 	</div>
