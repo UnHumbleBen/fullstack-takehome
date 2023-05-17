@@ -23,7 +23,6 @@
 					}
 					pageInfo {
 						hasNextPage
-						startCursor
 						endCursor
 					}
 				}

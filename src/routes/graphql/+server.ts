@@ -29,7 +29,6 @@ const yogaApp = createYoga<RequestEvent>({
 						users: usersToReturn,
 						pageInfo: {
 							hasNextPage: indexEnd < allUsers.length,
-							startCursor: usersToReturn.length > 0 ? usersToReturn[0].id : null,
 							endCursor: usersToReturn.length > 0 ? usersToReturn[usersToReturn.length - 1].id : null
 						}
 					}

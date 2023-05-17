@@ -15,7 +15,6 @@ export type UsersConnectionType = {
 
 export type PageInfoType = {
 	hasNextPage: boolean,
-	startCursor: string,
 	endCursor: string
 }
 

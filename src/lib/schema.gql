@@ -12,7 +12,6 @@ type UsersConnection {
 
 type PageInfo {
 	hasNextPage: Boolean!
-	startCursor: ID
 	endCursor: ID
 }
 
